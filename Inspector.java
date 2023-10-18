@@ -26,9 +26,9 @@ public class Inspector {
         Vector objectsToInspect = new Vector();
         Class ObjClass = obj.getClass();
 
-        String className = ObjClass.getName();
+
         Class immediateSuperClass = ObjClass.getSuperclass();
-        Class[] theTnternface = ObjClass.getInterfaces();
+        Class[] theInternface = ObjClass.getInterfaces();
         Method[] methods = ObjClass.getDeclaredMethods();
 
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
@@ -50,6 +50,57 @@ public class Inspector {
 //            System.out.println("the modifier in function " + m.getName() + " : " + Modifier.toString(modifier));
         }
 
+        Constructor[] constructors = ObjClass.getConstructors();
+
+        for(Constructor c : constructors)
+        {
+            Class[] parameterTypes = c.getParameterTypes();
+            int modifier = c.getModifiers();
+//            System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(parameterTypes));
+//            System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(modifier));
+
+        }
+
+        Field[] fields = ObjClass.getDeclaredFields();
+        for(Field f : fields)
+        {
+            Class type = f.getType();
+            int modifier = f.getModifiers();
+
+            try
+            {
+                if(type.isPrimitive())
+                {
+                    System.out.println("Object reference");
+                }
+                else
+                {
+                    try
+                    {
+                        f.setAccessible(true);
+
+                    }
+                    catch (InaccessibleObjectException e)
+                    {
+                        System.out.println("Not accessible");
+                    }
+                    Object value = f.get(obj);
+                    System.out.println(value);
+                }
+            }
+            catch (IllegalAccessException e)
+            {
+                System.out.println(e);
+            }
+            catch (IllegalArgumentException e)
+            {
+                System.out.println(e);
+            }
+//            System.out.println("the type in the field " + f.getName() + " : " + type.getName());
+//            System.out.println("the modifier in field " + f.getName() + " : " + Modifier.toString(modifier));
+
+        }
+
         //inspect the current class
         //inspectFields(obj, ObjClass,objectsToInspect);
 
@@ -58,10 +109,18 @@ public class Inspector {
 
     }
 
-    private String findClassName(){
+    public String InspectClassName(Object obj)
+    {
+        Class ObjClass = obj.getClass();
         String className = "";
-
-
+        if(ObjClass.isArray())
+        {
+            className = ObjClass.getName();
+        }
+        else
+        {
+            className = ObjClass.getName();
+        }
 
         return className;
     }
