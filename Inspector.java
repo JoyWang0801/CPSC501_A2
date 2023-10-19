@@ -184,6 +184,7 @@ public class Inspector {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
         info.ComponentType = componentType;
+        System.out.println("toString(): " + obj.toString());
 
         try
         {
@@ -210,14 +211,24 @@ public class Inspector {
     {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
+        int arrayLen = Array.getLength(obj);
 
-        if(componentType.isPrimitive())
+        System.out.println("Component type: " + componentType);
+
+        for(int index = 0; index < arrayLen; index++)
         {
-            ArrayInfo info = new ArrayInfo();
-            InspectArray(obj, info);
-            return;
+            Object arrobj = Array.get(obj, index);
+            if(arrobj.getClass().isArray())
+            {
+                System.out.println("element is array");
+                InspectMultipleDimensionalArray(arrobj);
+            }
+            else
+            {
+                System.out.print(arrobj.toString());
+            }
         }
+        System.out.println();
 
-        InspectMultipleDimensionalArray(Array.get(obj, 0));
     }
 }
