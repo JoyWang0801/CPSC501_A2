@@ -26,16 +26,21 @@ public class TestInspector {
         int[] testList = {1,2,3,4,5};
         String[] testList2 = {"Hi", "This", "Is", "Karina"};
         Inspector isp = new Inspector();
-        isp.InspectMultipleDimensionalArray(testList);
-        isp.InspectMultipleDimensionalArray(testList2);
+        isp.InspectArray(testList, info1);
+        isp.InspectArray(testList2, info2);
     }
 
     @Test
     public void TestInspect2DArray()
     {
+        ArrayInfo info1 = new ArrayInfo();
         int[][] testList = {{1,2},{3,4,5,6}};
         Inspector isp = new Inspector();
-        isp.InspectMultipleDimensionalArray(testList);
+        isp.InspectArray(testList, info1);
+
+        System.out.println(info1.Length);
+        System.out.println(info1.Dimension);
+        System.out.println(info1.ComponentType);
     }
 
 

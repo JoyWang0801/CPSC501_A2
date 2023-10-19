@@ -178,57 +178,31 @@ public class Inspector {
         return fields;
     }
 
-    // Pass in a 1d array and print it out
-    public void InspectArray(Object obj, ArrayInfo info)
-    {
+    public void InspectArray(Object obj, ArrayInfo info) {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
-        info.ComponentType = componentType;
-        System.out.println("toString(): " + obj.toString());
-
+        int arrayLen = Array.getLength(obj);
         try
         {
-            int arrayLen = Array.getLength(obj);
-            info.Length = arrayLen;
-            Object arr = Array.newInstance(componentType, arrayLen);
+            System.out.println("Component type: " + componentType);
 
-            for (int i = 0; i < arrayLen; i++)
-            {
-                Object arrobj = Array.get(obj, i);
-                System.out.print(arrobj);
+            for (int index = 0; index < arrayLen; index++) {
+                Object arrobj = Array.get(obj, index);
+                if (arrobj.getClass().isArray()) {
+                    info.Dimension++;
+                    System.out.println("element is array");
+                    InspectArray(arrobj, info);
+                } else {
+                    System.out.print(arrobj);
+                    info.ComponentType = componentType;
+                    info.Length++;
+                }
             }
-
-            System.out.println("componentType = " + componentType);
-
+            System.out.println();
         }
         catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e)
         {
             System.out.println(e);
         }
-    }
-
-    public void InspectMultipleDimensionalArray(Object obj)
-    {
-        Class ObjClass = obj.getClass();
-        Class componentType = ObjClass.getComponentType();
-        int arrayLen = Array.getLength(obj);
-
-        System.out.println("Component type: " + componentType);
-
-        for(int index = 0; index < arrayLen; index++)
-        {
-            Object arrobj = Array.get(obj, index);
-            if(arrobj.getClass().isArray())
-            {
-                System.out.println("element is array");
-                InspectMultipleDimensionalArray(arrobj);
-            }
-            else
-            {
-                System.out.print(arrobj.toString());
-            }
-        }
-        System.out.println();
-
     }
 }
