@@ -5,6 +5,7 @@ public class ArrayInfo {
 
     ArrayInfo()
     {
-        Dimension = 1;
+        Dimension = 0;
+        Length = 0;
     }
 }
