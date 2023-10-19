@@ -51,7 +51,8 @@ public class Inspector {
 
         if(ObjClass.isArray())
         {
-            InspectArray(obj, arrayInfo);
+            arrayInfo.name = ObjClass.getName();
+            InspectArrayContent(obj, arrayInfo);
         }
 
         if(recursive)
@@ -178,21 +179,31 @@ public class Inspector {
         return fields;
     }
 
-    public void InspectArray(Object obj, ArrayInfo info) {
+    public void InspectArray(Object obj, ArrayInfo info)
+    {
+        Class ObjClass = obj.getClass();
+        int arrayLen = Array.getLength(obj);
+        info.Length = arrayLen;
+        info.name = ObjClass.getName();
+
+        InspectArrayContent(obj, info);
+    }
+
+    private void InspectArrayContent(Object obj, ArrayInfo info) {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
         int arrayLen = Array.getLength(obj);
+        System.out.println("Component type = " + componentType + " name = " + info.name + " len = " + arrayLen + " objc = " + ObjClass);
         try
         {
             //System.out.println("Component type: " + componentType);
             for (int index = 0; index < arrayLen; index++) {
                 Object arrobj = Array.get(obj, index);
-                if (arrobj.getClass().isArray()) {
-                    InspectArray(arrobj, info);
+                if (componentType.isArray()) {
+                    InspectArrayContent(arrobj, info);
                 } else {
-                    //System.out.print(arrobj + " ");
+                    System.out.print(arrobj + " ");
                     info.ComponentType.put(componentType, 1);
-                    info.Length++;
                 }
             }
             //System.out.println();

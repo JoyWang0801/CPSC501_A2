@@ -68,7 +68,7 @@ public class Asst2TestDriver
     //------- Fields -----------------------------------------------------
     private Object ObjInspector = null;
     private Method inspectionMethod =null;
-    private boolean recursive=false;
+    private boolean recursive=true;
     //====================== MAIN =======================================
     public static void main(String[] args)
     {
