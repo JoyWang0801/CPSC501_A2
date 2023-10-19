@@ -184,21 +184,18 @@ public class Inspector {
         int arrayLen = Array.getLength(obj);
         try
         {
-            System.out.println("Component type: " + componentType);
-
+            //System.out.println("Component type: " + componentType);
             for (int index = 0; index < arrayLen; index++) {
                 Object arrobj = Array.get(obj, index);
                 if (arrobj.getClass().isArray()) {
-                    info.Dimension++;
-                    System.out.println("element is array");
                     InspectArray(arrobj, info);
                 } else {
-                    System.out.print(arrobj);
-                    info.ComponentType = componentType;
+                    //System.out.print(arrobj + " ");
+                    info.ComponentType.put(componentType, 1);
                     info.Length++;
                 }
             }
-            System.out.println();
+            //System.out.println();
         }
         catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e)
         {

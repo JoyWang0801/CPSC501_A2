@@ -1,5 +1,7 @@
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 public class TestInspector {
@@ -40,9 +42,27 @@ public class TestInspector {
 
         System.out.println(info1.Length);
         System.out.println(info1.Dimension);
-        System.out.println(info1.ComponentType);
+        System.out.println(Arrays.toString(info1.ComponentType.keySet().toArray()));
     }
 
+    @Test
+    public void TestMixArray()
+    {
+        ArrayInfo info = new ArrayInfo();
+        Object[][] testList = {
+                {1, "two", 3},
+                {"four", 5},
+                {6, "seven"}
+        };
+        Inspector isp = new Inspector();
+        isp.InspectArray(testList, info);
+
+        System.out.println(info.Length);
+        System.out.println(info.Dimension);
+        System.out.println(Arrays.toString(info.ComponentType.keySet().toArray()));
+
+
+    }
 
 
 }
