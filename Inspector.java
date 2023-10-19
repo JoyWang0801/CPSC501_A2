@@ -31,13 +31,17 @@ public class Inspector {
         Class ObjClass = obj.getClass();
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
 
-
         //inspect the current class
         //inspectFields(obj, ObjClass,objectsToInspect);
-        InspectBasicInfo(ObjClass);
-        InspectMethod(ObjClass);
-        InspectConstructor(ObjClass);
-        InspectField(obj, ObjClass);
+//        InspectBasicInfo(ObjClass);
+//        InspectMethod(ObjClass);
+//        InspectConstructor(ObjClass);
+//        InspectField(obj, ObjClass);
+
+        if(ObjClass.isArray())
+        {
+            InspectArray(obj);
+        }
 
         if(recursive)
         {
@@ -69,7 +73,7 @@ public class Inspector {
         Class immediateSuperClass = ObjClass.getSuperclass();
         Class[] theInternface = ObjClass.getInterfaces();
 
-//        System.out.println("The name of the ObjClass: " + className);
+        System.out.println("name = " + className);
 //        System.out.println("The name of the immediate superclass: " + immediateSuperClass);
 //        System.out.println("The name of the immediate superclass: " + Arrays.toString(theTnternface));
     }
@@ -85,10 +89,10 @@ public class Inspector {
             Class returnType = m.getReturnType();
             int modifier = m.getModifiers();
 
-            System.out.println("exceptions thrown in function " + m.getName() + " : " + Arrays.toString(exceptionTypes));
-            System.out.println("parameter type in function " + m.getName() + " : " + Arrays.toString(parameterTypes));
-            System.out.println("return type in function " + m.getName() + " : " + returnType);
-            System.out.println("the modifier in function " + m.getName() + " : " + Modifier.toString(modifier));
+//            System.out.println("exceptions thrown in function " + m.getName() + " : " + Arrays.toString(exceptionTypes));
+//            System.out.println("parameter type in function " + m.getName() + " : " + Arrays.toString(parameterTypes));
+//            System.out.println("return type in function " + m.getName() + " : " + returnType);
+//            System.out.println("the modifier in function " + m.getName() + " : " + Modifier.toString(modifier));
         }
 
         return methods;
@@ -102,8 +106,8 @@ public class Inspector {
         {
             Class[] parameterTypes = c.getParameterTypes();
             int modifier = c.getModifiers();
-            System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(parameterTypes));
-            System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(modifier));
+            //System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(parameterTypes));
+            //System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(modifier));
 
         }
 
@@ -120,9 +124,17 @@ public class Inspector {
 
             try
             {
-                if(type.isPrimitive())
+                if(!type.isPrimitive())
                 {
-                    System.out.println("Object reference");
+                    //System.out.println("Object references, arrays or interfaces");
+                    if(type.isArray())
+                    {
+
+                    }
+                    else if(type.isInterface())
+                    {
+                        System.out.println("Interface");
+                    }
                 }
                 else
                 {
@@ -153,5 +165,28 @@ public class Inspector {
         }
 
         return fields;
+    }
+
+    public void InspectArray(Object obj)
+    {
+        Class ObjClass = obj.getClass();
+        Class componentType = ObjClass.getComponentType();
+
+        try
+        {
+            int arrayLen = Array.getLength(obj);
+
+            Object arr = Array.newInstance(componentType, arrayLen);
+            Object arrobj = Array.get(obj, 0);
+            Class cls = ObjClass.getComponentType();
+
+            System.out.println("CLS = " + cls);
+            System.out.println("arrobj = " + arrobj);
+        }
+        catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e)
+        {
+            System.out.println(e);
+        }
+
     }
 }
