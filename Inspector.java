@@ -25,7 +25,17 @@ The current value of each field. If the field is an object reference,
     directly (this will be the name of the object’s class plus the object’s “identity hash code”).
  */
 
+
 public class Inspector {
+    Class[] method_exceptionTypes;
+    Class[] method_parameterTypes;
+    Class method_returnType;
+    int method_modifier;
+    Class[] constructor_parameterTypes;
+    int constructor_modifier;
+    Class field_type;
+    int field_modifier;
+
     public void inspect(Object obj, boolean recursive) {
         Vector objectsToInspect = new Vector();
         Class ObjClass = obj.getClass();
@@ -37,10 +47,11 @@ public class Inspector {
 //        InspectMethod(ObjClass);
 //        InspectConstructor(ObjClass);
 //        InspectField(obj, ObjClass);
+        ArrayInfo arrayInfo = new ArrayInfo();
 
         if(ObjClass.isArray())
         {
-            InspectArray(obj);
+            InspectArray(obj, arrayInfo);
         }
 
         if(recursive)
@@ -84,10 +95,10 @@ public class Inspector {
 
         for(Method m : methods)
         {
-            Class[] exceptionTypes = m.getExceptionTypes();
-            Class[] parameterTypes = m.getParameterTypes();
-            Class returnType = m.getReturnType();
-            int modifier = m.getModifiers();
+            method_exceptionTypes = m.getExceptionTypes();
+            method_parameterTypes = m.getParameterTypes();
+            method_returnType = m.getReturnType();
+            method_modifier = m.getModifiers();
 
 //            System.out.println("exceptions thrown in function " + m.getName() + " : " + Arrays.toString(exceptionTypes));
 //            System.out.println("parameter type in function " + m.getName() + " : " + Arrays.toString(parameterTypes));
@@ -104,8 +115,8 @@ public class Inspector {
 
         for(Constructor c : constructors)
         {
-            Class[] parameterTypes = c.getParameterTypes();
-            int modifier = c.getModifiers();
+            constructor_parameterTypes = c.getParameterTypes();
+            constructor_modifier = c.getModifiers();
             //System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(parameterTypes));
             //System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(modifier));
 
@@ -119,19 +130,19 @@ public class Inspector {
         Field[] fields = ObjClass.getDeclaredFields();
         for(Field f : fields)
         {
-            Class type = f.getType();
-            int modifier = f.getModifiers();
+            Class field_type = f.getType();
+            int field_modifier = f.getModifiers();
 
             try
             {
-                if(!type.isPrimitive())
+                if(!field_type.isPrimitive())
                 {
                     //System.out.println("Object references, arrays or interfaces");
-                    if(type.isArray())
+                    if(field_type.isArray())
                     {
 
                     }
-                    else if(type.isInterface())
+                    else if(field_type.isInterface())
                     {
                         System.out.println("Interface");
                     }
@@ -167,26 +178,46 @@ public class Inspector {
         return fields;
     }
 
-    public void InspectArray(Object obj)
+    // Pass in a 1d array and print it out
+    public void InspectArray(Object obj, ArrayInfo info)
     {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
+        info.ComponentType = componentType;
 
         try
         {
             int arrayLen = Array.getLength(obj);
-
+            info.Length = arrayLen;
             Object arr = Array.newInstance(componentType, arrayLen);
-            Object arrobj = Array.get(obj, 0);
-            Class cls = ObjClass.getComponentType();
 
-            System.out.println("CLS = " + cls);
-            System.out.println("arrobj = " + arrobj);
+            for (int i = 0; i < arrayLen; i++)
+            {
+                Object arrobj = Array.get(obj, i);
+                System.out.print(arrobj);
+            }
+
+            System.out.println("componentType = " + componentType);
+
         }
         catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e)
         {
             System.out.println(e);
         }
+    }
 
+    public void InspectMultipleDimensionalArray(Object obj)
+    {
+        Class ObjClass = obj.getClass();
+        Class componentType = ObjClass.getComponentType();
+
+        if(componentType.isPrimitive())
+        {
+            ArrayInfo info = new ArrayInfo();
+            InspectArray(obj, info);
+            return;
+        }
+
+        InspectMultipleDimensionalArray(Array.get(obj, 0));
     }
 }
