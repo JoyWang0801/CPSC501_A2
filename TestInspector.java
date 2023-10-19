@@ -26,14 +26,14 @@ public class TestInspector {
         int[] testList = {1,2,3,4,5};
         String[] testList2 = {"Hi", "This", "Is", "Karina"};
         Inspector isp = new Inspector();
-        isp.InspectArray(testList, info1);
-        isp.InspectArray(testList2, info2);
+        isp.InspectMultipleDimensionalArray(testList);
+        isp.InspectMultipleDimensionalArray(testList2);
     }
 
     @Test
     public void TestInspect2DArray()
     {
-        int[][] testList = {{1,2},{3,4}};
+        int[][] testList = {{1,2},{3,4,5,6}};
         Inspector isp = new Inspector();
         isp.InspectMultipleDimensionalArray(testList);
     }
