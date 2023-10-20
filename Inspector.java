@@ -190,9 +190,9 @@ public class Inspector {
                         {
                             ArrayInfo arrayInfo = new ArrayInfo();
                             InspectArray(f.get(obj), arrayInfo);
-                            System.out.println("Name = " + arrayInfo.name);
-                            System.out.println("Component Type = " + arrayInfo.ComponentType.keySet());
-                            System.out.println("Len = " + arrayInfo.Length);
+//                            System.out.println("|ーName = " + arrayInfo.name);
+//                            System.out.println("|ーComponent Type = " + arrayInfo.ComponentType.keySet());
+//                            System.out.println("|ー Array Length = " + arrayInfo.Length);
                         }
                         else
                         {
@@ -222,15 +222,20 @@ public class Inspector {
         int arrayLen = Array.getLength(obj);
         info.Length = arrayLen;
         info.name = ObjClass.getName();
-
+        System.out.println("------Array Content:-------");
         InspectArrayContent(obj, info);
+        System.out.println("---------------------------");
+        System.out.println("|ーName = " + info.name);
+        System.out.println("|ーComponent Type = " + info.ComponentType.keySet());
+        System.out.println("|ーArray Length = " + info.Length);
+        System.out.println("---------------------------");
     }
 
     private void InspectArrayContent(Object obj, ArrayInfo info) {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
         int arrayLen = Array.getLength(obj);
-        System.out.println("Component type = " + componentType + " name = " + info.name + " len = " + arrayLen + " objc = " + ObjClass);
+        //System.out.println("Component type = " + componentType + " name = " + info.name + " len = " + arrayLen + " objc = " + ObjClass);
         try
         {
             //System.out.println("Component type: " + componentType);
@@ -243,7 +248,7 @@ public class Inspector {
                     info.ComponentType.put(componentType, 1);
                 }
             }
-            //System.out.println();
+            System.out.println();
         }
         catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e)
         {
