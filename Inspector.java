@@ -35,9 +35,6 @@ public class Inspector {
         HashSuperclassAndinterface.add(obj.getClass());
         superclassAndinterface = new Vector<>(HashSuperclassAndinterface);
         for (int index = 0; index < superclassAndinterface.size(); index++)
-        //for (Class c : HashSuperclassAndinterface)
-        //Iterator it = HashSuperclassAndinterface.iterator();
-        //while (it.hasNext())
         {
             Class c = superclassAndinterface.elementAt(index);
             //Class c = it.next().getClass();
@@ -65,8 +62,8 @@ public class Inspector {
                     }
                 }
 
-                //InspectMethod(c);
-                //InspectConstructor(c);
+                InspectMethod(c);
+                InspectConstructor(c);
                 if (Modifier.isAbstract(c.getModifiers()))
                 {
                     InspectField(c, obj);
@@ -126,6 +123,12 @@ public class Inspector {
         return constructors;
     }
 
+    private void updateList(Class clsToUpdate)
+    {
+        HashSuperclassAndinterface.add(clsToUpdate);
+        superclassAndinterface.addElement(clsToUpdate);
+    }
+
     public Field[] InspectField(Class ObjClass, Object obj) throws IllegalAccessException {
         System.out.println("==============FIELD==============");
         int modifier = ObjClass.getModifiers();
@@ -162,17 +165,16 @@ public class Inspector {
                             InspectArray(f.get(obj), arrayInfo);
                             for (Class cls : arrayInfo.ComponentType.keySet())
                             {
-                                if(!HashSuperclassAndinterface.contains(cls))
+                                if(!HashSuperclassAndinterface.contains(cls) && this.recursive)
                                 {
-                                    HashSuperclassAndinterface.add(cls);
-                                    superclassAndinterface.addElement(cls);
+                                    updateList(cls);
                                 }
                             }
-                        }else if(this.recursive)
+                        }
+                        else if(this.recursive)
                         {
                             if(!HashSuperclassAndinterface.contains(field_type)) {
-                                HashSuperclassAndinterface.add(field_type);
-                                superclassAndinterface.addElement(field_type);
+                                updateList(field_type);
                                 System.out.println(field_type + " is added to be inspect");
                             }
                         }

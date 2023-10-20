@@ -72,7 +72,7 @@ public class Asst2TestDriver
     //====================== MAIN =======================================
     public static void main(String[] args)
     {
-		boolean rec=true;
+		boolean rec=false;
 
 		if(args.length >= 1)
 		{
@@ -87,9 +87,9 @@ public class Asst2TestDriver
 //				driver.runTest( new ClassB() );
 //				driver.runTest( new ClassD(32) );
 //				driver.runTest( new ClassD() );
-//				driver.runTest( new ClassB[12] );
+				driver.runTest( new ClassB[12] );
 //				driver.runTest( new ClassB[12][12] );
-				driver.runTest( "Test String" );
+//				driver.runTest( "Test String" );
 			}
 			catch(Exception e)
 			{
