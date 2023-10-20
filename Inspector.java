@@ -23,9 +23,6 @@ public class Inspector {
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
 
         InspectBasicInfo(obj);
-          //inspectFieldClasses( obj, ObjClass, objectsToInspect, recursive);
-        //System.out.println(this.superclassAndinterface.toString());
-
     }
 
     public void InspectBasicInfo(Object obj)
@@ -37,8 +34,6 @@ public class Inspector {
         for (int index = 0; index < superclassAndinterface.size(); index++)
         {
             Class c = superclassAndinterface.elementAt(index);
-            //Class c = it.next().getClass();
-
             // Update superclass
             try
             {
@@ -50,18 +45,21 @@ public class Inspector {
                 System.out.println("Interface = " + Arrays.toString(theInterface));
                 if (immediateSuperClass != null && !HashSuperclassAndinterface.contains(immediateSuperClass))
                 {
-                    HashSuperclassAndinterface.add(immediateSuperClass);
-                    superclassAndinterface.addElement(immediateSuperClass);
+                    updateList(immediateSuperClass);
                 }
                 for (Class i : theInterface)
                 {
                     if (!HashSuperclassAndinterface.contains(i))
                     {
-                        HashSuperclassAndinterface.add(i);
-                        superclassAndinterface.addElement(i);
+                        updateList(i);
                     }
                 }
 
+                if(c.isArray())
+                {
+                    ArrayInfo info = new ArrayInfo();
+                    InspectArray(obj, info);
+                }
                 InspectMethod(c);
                 InspectConstructor(c);
                 if (Modifier.isAbstract(c.getModifiers()))
@@ -73,13 +71,12 @@ public class Inspector {
                     InspectField(c, c.newInstance());
 
                 }
+
             }
             catch (NullPointerException | IllegalAccessException | InstantiationException e)
             {
                 throw new RuntimeException(e.getMessage());
             }
-
-            //superclassAndinterface = new Vector<>(HashSuperclassAndinterface);
         }
 
         System.out.println(superclassAndinterface.toString());
@@ -163,13 +160,6 @@ public class Inspector {
                         {
                             ArrayInfo arrayInfo = new ArrayInfo();
                             InspectArray(f.get(obj), arrayInfo);
-                            for (Class cls : arrayInfo.ComponentType.keySet())
-                            {
-                                if(!HashSuperclassAndinterface.contains(cls) && this.recursive)
-                                {
-                                    updateList(cls);
-                                }
-                            }
                         }
                         else if(this.recursive)
                         {
@@ -211,21 +201,25 @@ public class Inspector {
         System.out.println("|ーComponent Type = " + info.ComponentType.keySet());
         System.out.println("|ーArray Length = " + info.Length);
         System.out.println("---------------------------");
+        for (Class cls : info.ComponentType.keySet())
+        {
+            if(!HashSuperclassAndinterface.contains(cls) && this.recursive)
+            {
+                updateList(cls);
+            }
+        }
     }
 
     private void InspectArrayContent(Object obj, ArrayInfo info) {
         Class ObjClass = obj.getClass();
         Class componentType = ObjClass.getComponentType();
         int arrayLen = Array.getLength(obj);
-        //System.out.println("Component type = " + componentType + " name = " + info.name + " len = " + arrayLen + " objc = " + ObjClass);
         try
         {
-            //System.out.println("Component type: " + componentType);
             for (int index = 0; index < arrayLen; index++) {
                 Object arrobj = Array.get(obj, index);
                 if (componentType.isArray()) {
                     InspectArrayContent(arrobj, info);
-                   // Object[] obj = (Object[]) arrobj;
                 } else {
                     System.out.print(arrobj + " ");
                     info.ComponentType.put(componentType, 1);
