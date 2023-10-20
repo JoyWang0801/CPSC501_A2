@@ -50,14 +50,14 @@ public class Inspector {
 
         Enumeration e = this.objectsToInspect.elements();
 
-        while(e.hasMoreElements())
-        {
-            Object o = e.nextElement();
-            System.out.println("==============" + o + "==============");
+        //while(e.hasMoreElements())
+        //{
+          //  Object o = e.nextElement();
+           // System.out.println("==============" + o + "==============");
             //InspectMethod(o);
             //InspectConstructor(o);
             //InspectField(o);
-        }
+        //}
 
         if(recursive)
         {
@@ -82,10 +82,11 @@ public class Inspector {
 
         for (int index = 0; index < superclassAndinterface.size(); index++)
         {
+            Class c = superclassAndinterface.elementAt(index);
+
             // Update superclass
             try
             {
-                Class c = superclassAndinterface.elementAt(index);
                 className = c.getName();
                 System.out.println("==============" + className + "==============");
                 immediateSuperClass = c.getSuperclass();
@@ -94,46 +95,48 @@ public class Inspector {
                 System.out.println("Interface = " + Arrays.toString(theInterface));
                 if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
                 for (Class i : theInterface) superclassAndinterface.addElement(i);
-                //immediateSuperClass = newimmediateSuperClass;
             }
             catch (NullPointerException e){;}
+
+            InspectMethod(c);
+            InspectConstructor(c);
+
         }
     }
 
-    public Method[] InspectMethod(Object obj)
+    public Method[] InspectMethod(Class ObjClass)
     {
-        Class ObjClass = obj.getClass();
         Method[] methods = ObjClass.getDeclaredMethods();
-
+        System.out.println("==============METHOD==============");
         for(Method m : methods)
         {
-            System.out.println("|");
             System.out.println("ーーーー" + m.getName() + "ーーーー");
             method_exceptionTypes = m.getExceptionTypes();
             method_parameterTypes = m.getParameterTypes();
             method_returnType = m.getReturnType();
             method_modifier = m.getModifiers();
 
-            System.out.println("ーThe exception thrown =  " + Arrays.toString(method_exceptionTypes));
-            System.out.println("ーparameter type" + Arrays.toString(method_parameterTypes));
-            System.out.println("ーreturn type " + method_returnType);
-            System.out.println("ーthe modifier" + Modifier.toString(method_modifier));
+            System.out.println("|ーThe exception thrown =  " + Arrays.toString(method_exceptionTypes));
+            System.out.println("|ーparameter type = " + Arrays.toString(method_parameterTypes));
+            System.out.println("|ーreturn type = " + method_returnType);
+            System.out.println("|ーthe modifier = " + Modifier.toString(method_modifier));
         }
 
         return methods;
     }
 
-    public Constructor[] InspectConstructor(Object obj)
+    public Constructor[] InspectConstructor(Class ObjClass)
     {
-        Class ObjClass = obj.getClass();
         Constructor[] constructors = ObjClass.getConstructors();
+        System.out.println("==============Constructor==============");
 
         for(Constructor c : constructors)
         {
+            System.out.println("ーーーー" + c.getName() + "ーーーー");
             constructor_parameterTypes = c.getParameterTypes();
             constructor_modifier = c.getModifiers();
-            System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(constructor_parameterTypes));
-            System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(constructor_modifier));
+            System.out.println("|ーparameter types = " + Arrays.toString(constructor_parameterTypes));
+            System.out.println("|ーthe modifier = " + Modifier.toString(constructor_modifier));
         }
 
         return constructors;
