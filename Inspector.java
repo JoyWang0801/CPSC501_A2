@@ -33,14 +33,14 @@ public class Inspector {
         superclassAndinterface = new Vector<>(HashSuperclassAndinterface);
         for (int index = 0; index < superclassAndinterface.size(); index++)
         {
-            Class c = superclassAndinterface.elementAt(index);
+            Class objClassToInspect = superclassAndinterface.elementAt(index);
             // Update superclass
             try
             {
                 System.out.println("==============CLASS==============");
-                System.out.println("ーーーーclass name: " + c.getName() + "ーーーー");
-                immediateSuperClass = c.getSuperclass();
-                theInterface = c.getInterfaces();
+                System.out.println("ーーーーclass name: " + objClassToInspect.getName() + "ーーーー");
+                immediateSuperClass = objClassToInspect.getSuperclass();
+                theInterface = objClassToInspect.getInterfaces();
                 System.out.println("Superclass = " + immediateSuperClass);
                 System.out.println("Interface = " + Arrays.toString(theInterface));
                 if (immediateSuperClass != null && !HashSuperclassAndinterface.contains(immediateSuperClass))
@@ -55,20 +55,20 @@ public class Inspector {
                     }
                 }
 
-                if(c.isArray())
+                if(objClassToInspect.isArray())
                 {
                     ArrayInfo info = new ArrayInfo();
                     InspectArray(obj, info);
                 }
-                InspectMethod(c);
-                InspectConstructor(c);
-                if (Modifier.isAbstract(c.getModifiers()))
+                InspectMethod(objClassToInspect);
+                InspectConstructor(objClassToInspect);
+                if (Modifier.isAbstract(objClassToInspect.getModifiers()))
                 {
-                    InspectField(c, obj);
+                    InspectField(objClassToInspect, obj);
                 }
                 else
                 {
-                    InspectField(c, c.newInstance());
+                    InspectField(objClassToInspect, objClassToInspect.newInstance());
 
                 }
 
@@ -78,21 +78,19 @@ public class Inspector {
                 throw new RuntimeException(e.getMessage());
             }
         }
-
-        System.out.println(superclassAndinterface.toString());
     }
 
     public Method[] InspectMethod(Class ObjClass)
     {
         Method[] methods = ObjClass.getDeclaredMethods();
         System.out.println("==============METHOD==============");
-        for(Method m : methods)
+        for(Method method : methods)
         {
-            System.out.println("ーーーー method name: " + m.getName() + "ーーーー");
-            method_exceptionTypes = m.getExceptionTypes();
-            method_parameterTypes = m.getParameterTypes();
-            method_returnType = m.getReturnType();
-            method_modifier = m.getModifiers();
+            System.out.println("ーーーー method name: " + method.getName() + "ーーーー");
+            method_exceptionTypes = method.getExceptionTypes();
+            method_parameterTypes = method.getParameterTypes();
+            method_returnType = method.getReturnType();
+            method_modifier = method.getModifiers();
 
             System.out.println("|ーThe exception thrown =  " + Arrays.toString(method_exceptionTypes));
             System.out.println("|ーparameter type = " + Arrays.toString(method_parameterTypes));
@@ -108,11 +106,11 @@ public class Inspector {
         Constructor[] constructors = ObjClass.getConstructors();
         System.out.println("==============Constructor==============");
 
-        for(Constructor c : constructors)
+        for(Constructor cons : constructors)
         {
-            System.out.println("ーーーー constructor name: " + c.getName() + "ーーーー");
-            constructor_parameterTypes = c.getParameterTypes();
-            constructor_modifier = c.getModifiers();
+            System.out.println("ーーーー constructor name: " + cons.getName() + "ーーーー");
+            constructor_parameterTypes = cons.getParameterTypes();
+            constructor_modifier = cons.getModifiers();
             System.out.println("|ーparameter types = " + Arrays.toString(constructor_parameterTypes));
             System.out.println("|ーthe modifier = " + Modifier.toString(constructor_modifier));
         }
@@ -131,17 +129,17 @@ public class Inspector {
         int modifier = ObjClass.getModifiers();
 
         Field[] fields = ObjClass.getDeclaredFields();
-        for(Field f : fields)
+        for(Field field : fields)
         {
-            Class field_type = f.getType();
-            int field_modifier = f.getModifiers();
-            System.out.println("ーーーー field name: " + f.getName() + "ーーーー");
+            Class field_type = field.getType();
+            int field_modifier = field.getModifiers();
+            System.out.println("ーーーー field name: " + field.getName() + "ーーーー");
             System.out.println("|ーField type = " + field_type);
             System.out.println("|ーField modifier = " + Modifier.toString(field_modifier));
 
             try
             {
-                f.setAccessible(true);
+                field.setAccessible(true);
             }
             catch (InaccessibleObjectException e)
             {
@@ -159,7 +157,7 @@ public class Inspector {
                         if(field_type.isArray())
                         {
                             ArrayInfo arrayInfo = new ArrayInfo();
-                            InspectArray(f.get(obj), arrayInfo);
+                            InspectArray(field.get(obj), arrayInfo);
                         }
                         else if(this.recursive)
                         {
@@ -170,12 +168,12 @@ public class Inspector {
                         }
                         else
                         {
-                            System.out.println("Object reference " + f.getClass() + " " + f.getName() + " with hashcode: " + f.hashCode());
+                            System.out.println("Object reference " + field.getClass() + " " + field.getName() + " with hashcode: " + field.hashCode());
                         }
                     }
                     else
                     {
-                        Object value = f.get(obj);
+                        Object value = field.get(obj);
                         System.out.println("|ーValue = " + value);
                     }
                 }
