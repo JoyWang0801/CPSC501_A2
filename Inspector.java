@@ -41,30 +41,22 @@ public class Inspector {
     public void inspect(Object obj, boolean recursive) {
         this.objectsToInspect.addElement(obj);
         this.recursive = recursive;
-
-        Class ObjClass = obj.getClass();
-        this.objectsToInspect.addElement(obj);
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
 
-        //inspect the current class
-        //inspectFields(obj, ObjClass,objectsToInspect);
-
-//        InspectBasicInfo(ObjClass);
+        InspectBasicInfo(obj);
 //        InspectMethod(ObjClass);
 //        InspectConstructor(ObjClass);
 //        InspectField(obj, ObjClass);
 
         Enumeration e = this.objectsToInspect.elements();
-        Object o = e.nextElement();
+
         while(e.hasMoreElements())
         {
+            Object o = e.nextElement();
             System.out.println("==============" + o + "==============");
-            //InspectSupers(o);
-            InspectBasicInfo(o);
             //InspectMethod(o);
             //InspectConstructor(o);
             //InspectField(o);
-            o = e.nextElement();
         }
 
         if(recursive)
@@ -72,68 +64,40 @@ public class Inspector {
 
         }
           //inspectFieldClasses( obj, ObjClass, objectsToInspect, recursive);
+        System.out.println(this.objectsToInspect.toString());
 
-    }
-
-    public void InspectSupers(Object obj)
-    {
-        Class immediateSuperClass = obj.getClass().getSuperclass();
-        Class[] theInterface = obj.getClass().getInterfaces();
-
-        while(immediateSuperClass != null || theInterface != null)
-        {
-            System.out.println("Superclass = " + immediateSuperClass);
-            System.out.println("Interface = " + Arrays.toString(theInterface));
-
-            immediateSuperClass = immediateSuperClass.getSuperclass();
-            theInterface = immediateSuperClass.getInterfaces();
-        }
-
-        while(theInterface != null)
-        {
-        }
-        //System.out.println("Interface = " + theInterface.toString());
     }
 
     public void InspectBasicInfo(Object obj)
     {
         String className = obj.getClass().getName();
         Class immediateSuperClass = obj.getClass().getSuperclass();
+        System.out.println(className + " Superclass = " + immediateSuperClass);
         Class[] theInterface = obj.getClass().getInterfaces();
+        System.out.println(className + " Interface = " + Arrays.toString(theInterface));
 
-        while(immediateSuperClass != null || theInterface.length > 0)
+        Vector<Class> superclassAndinterface = new Vector<>();
+        if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
+        for (Class i : theInterface) superclassAndinterface.addElement(i);
+
+        for (int index = 0; index < superclassAndinterface.size(); index++)
         {
-            System.out.println("Superclass = " + immediateSuperClass);
-            System.out.println("Interface = " + Arrays.toString(theInterface));
-
-            this.objectsToInspect.addElement(immediateSuperClass);
-
+            // Update superclass
             try
             {
-                immediateSuperClass = immediateSuperClass.getSuperclass();
-
-                theInterface = immediateSuperClass.getInterfaces();
+                Class c = superclassAndinterface.elementAt(index);
+                className = c.getName();
+                System.out.println("==============" + className + "==============");
+                immediateSuperClass = c.getSuperclass();
+                theInterface = c.getInterfaces();
+                System.out.println("Superclass = " + immediateSuperClass);
+                System.out.println("Interface = " + Arrays.toString(theInterface));
+                if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
+                for (Class i : theInterface) superclassAndinterface.addElement(i);
+                //immediateSuperClass = newimmediateSuperClass;
             }
-            catch (NullPointerException e){break;}
+            catch (NullPointerException e){;}
         }
-
-        /*if(theInterface.length > 0)
-        {
-            for(Class i : theInterface)
-            {
-                if(!this.objectsToInspect.contains(i))
-                {
-                    System.out.println("Adding interface " + i);
-                    this.objectsToInspect.addElement(i);
-                }
-            }
-        }*/
-
-        System.out.println("name = " + className);
-        System.out.println("Immediate superclass: " + immediateSuperClass);
-        System.out.println("Immediate interfaces: " + Arrays.toString(theInterface));
-
-        System.out.println(this.objectsToInspect.toString());
     }
 
     public Method[] InspectMethod(Object obj)
@@ -143,15 +107,17 @@ public class Inspector {
 
         for(Method m : methods)
         {
+            System.out.println("|");
+            System.out.println("ーーーー" + m.getName() + "ーーーー");
             method_exceptionTypes = m.getExceptionTypes();
             method_parameterTypes = m.getParameterTypes();
             method_returnType = m.getReturnType();
             method_modifier = m.getModifiers();
 
-            System.out.println("exceptions thrown in function " + m.getName() + " : " + Arrays.toString(method_exceptionTypes));
-            System.out.println("parameter type in function " + m.getName() + " : " + Arrays.toString(method_parameterTypes));
-            System.out.println("return type in function " + m.getName() + " : " + method_returnType);
-            System.out.println("the modifier in function " + m.getName() + " : " + Modifier.toString(method_modifier));
+            System.out.println("ーThe exception thrown =  " + Arrays.toString(method_exceptionTypes));
+            System.out.println("ーparameter type" + Arrays.toString(method_parameterTypes));
+            System.out.println("ーreturn type " + method_returnType);
+            System.out.println("ーthe modifier" + Modifier.toString(method_modifier));
         }
 
         return methods;
