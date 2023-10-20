@@ -102,7 +102,7 @@ public class Inspector {
 
                 if (Modifier.isAbstract(c.getModifiers()))
                 {
-                    InspectField(immediateSuperClass, superclassAndinterface.elementAt(index - 1).newInstance());
+                    InspectField(c, obj);
                 }
                 else
                 {
@@ -110,12 +110,7 @@ public class Inspector {
 
                 }
             }
-            catch (NullPointerException e){;} catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-
+            catch (NullPointerException e){;}
 
         }
     }
@@ -159,15 +154,20 @@ public class Inspector {
     }
 
     public Field[] InspectField(Class ObjClass, Object obj) {
+        System.out.println("==============FIELD==============");
+        int modifier = ObjClass.getModifiers();
+        Boolean isAbtract = Modifier.isAbstract(modifier);
         Field[] fields = ObjClass.getDeclaredFields();
-        System.out.println(Arrays.toString(fields));
 
         for(Field f : fields)
         {
             Class field_type = f.getType();
-            System.out.println(f.getName() + " " + field_type);
             int field_modifier = f.getModifiers();
+            System.out.println("ーーーー" + f.getName() + "ーーーー");
+            System.out.println("|ー" + field_type);
+            System.out.println("|ー" + Modifier.toString(field_modifier));
 
+            // Access private
             try
             {
                 f.setAccessible(true);
@@ -178,48 +178,40 @@ public class Inspector {
                 System.out.println("Not accessible");
             }
 
-            try {
-                obj = ObjClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                System.out.println(e);
-            }
 
-            try
-            {
-                if(!field_type.isPrimitive())
+            // Skip abstract classes
+            if (!isAbtract){
+                try
                 {
-                    //System.out.println("Object references, arrays or interfaces");
-                    if(field_type.isArray())
+                    if(!field_type.isPrimitive())
                     {
-                        ArrayInfo arrayInfo = new ArrayInfo();
-                        InspectArray(f.get(obj), arrayInfo);
-/*                        System.out.println("Name = " + arrayInfo.name);
-                        System.out.println("Component Type = " + arrayInfo.ComponentType.keySet());
-                        System.out.println("Len = " + arrayInfo.Length);*/
+                        //System.out.println("Object references, arrays or interfaces");
+                        if(field_type.isArray())
+                        {
+                            ArrayInfo arrayInfo = new ArrayInfo();
+                            InspectArray(f.get(obj), arrayInfo);
+                            System.out.println("Name = " + arrayInfo.name);
+                            System.out.println("Component Type = " + arrayInfo.ComponentType.keySet());
+                            System.out.println("Len = " + arrayInfo.Length);
+                        }
+                        else
+                        {
+                            System.out.println("Object reference " + ObjClass + " " + f.getName() + " " + f.hashCode());
+                            //objectsToInspect.add(f);
+                            this.objectsToInspect.addElement(field_type);
+                        }
                     }
-/*                    else if(field_type.isInterface())
-                    {
-                        System.out.println("Interface");
-                    }*/
                     else
                     {
-                        System.out.println("Object reference " + ObjClass + " " + f.getName() + " " + f.hashCode());
-                        //objectsToInspect.add(f);
-                        this.objectsToInspect.addElement(field_type);
+                        Object value = f.get(obj);
+                        System.out.println(value);
                     }
                 }
-                else
+                catch (IllegalAccessException | IllegalArgumentException e)
                 {
-                    Object value = f.get(obj);
-                    System.out.println(value);
+                    System.out.println(e);
                 }
             }
-            catch (IllegalAccessException | IllegalArgumentException e)
-            {
-                System.out.println(e);
-            }
-//            System.out.println("the type in the field " + f.getName() + " : " + type.getName());
-//            System.out.println("the modifier in field " + f.getName() + " : " + Modifier.toString(modifier));
         }
         return fields;
     }
