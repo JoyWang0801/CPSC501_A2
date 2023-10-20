@@ -33,11 +33,14 @@ public class Inspector {
         Class immediateSuperClass;
         Class[] theInterface;
         HashSuperclassAndinterface.add(obj.getClass());
-
-        //for (int index = 0; index < SuperclassAndinterface.size(); index++)
-        for (Class c : HashSuperclassAndinterface)
+        superclassAndinterface = new Vector<>(HashSuperclassAndinterface);
+        for (int index = 0; index < superclassAndinterface.size(); index++)
+        //for (Class c : HashSuperclassAndinterface)
+        //Iterator it = HashSuperclassAndinterface.iterator();
+        //while (it.hasNext())
         {
-            //Class c = HashSuperclassAndinterface.(index);
+            Class c = superclassAndinterface.elementAt(index);
+            //Class c = it.next().getClass();
 
             // Update superclass
             try
@@ -48,8 +51,19 @@ public class Inspector {
                 theInterface = c.getInterfaces();
                 System.out.println("Superclass = " + immediateSuperClass);
                 System.out.println("Interface = " + Arrays.toString(theInterface));
-                if (immediateSuperClass != null) HashSuperclassAndinterface.add(immediateSuperClass);
-                for (Class i : theInterface) HashSuperclassAndinterface.add(i);
+                if (immediateSuperClass != null && !HashSuperclassAndinterface.contains(immediateSuperClass))
+                {
+                    HashSuperclassAndinterface.add(immediateSuperClass);
+                    superclassAndinterface.addElement(immediateSuperClass);
+                }
+                for (Class i : theInterface)
+                {
+                    if (!HashSuperclassAndinterface.contains(i))
+                    {
+                        HashSuperclassAndinterface.add(i);
+                        superclassAndinterface.addElement(i);
+                    }
+                }
 
                 //InspectMethod(c);
                 //InspectConstructor(c);
@@ -68,7 +82,10 @@ public class Inspector {
                 throw new RuntimeException(e.getMessage());
             }
 
+            //superclassAndinterface = new Vector<>(HashSuperclassAndinterface);
         }
+
+        System.out.println(superclassAndinterface.toString());
     }
 
     public Method[] InspectMethod(Class ObjClass)
@@ -143,15 +160,25 @@ public class Inspector {
                         {
                             ArrayInfo arrayInfo = new ArrayInfo();
                             InspectArray(f.get(obj), arrayInfo);
+                            for (Class cls : arrayInfo.ComponentType.keySet())
+                            {
+                                if(!HashSuperclassAndinterface.contains(cls))
+                                {
+                                    HashSuperclassAndinterface.add(cls);
+                                    superclassAndinterface.addElement(cls);
+                                }
+                            }
+                        }else if(this.recursive)
+                        {
+                            if(!HashSuperclassAndinterface.contains(field_type)) {
+                                HashSuperclassAndinterface.add(field_type);
+                                superclassAndinterface.addElement(field_type);
+                                System.out.println(field_type + " is added to be inspect");
+                            }
                         }
                         else
                         {
-                            System.out.println("Object reference " + f.getClass() + " " + f.getName() + " " + f.hashCode());
-                        }
-
-                        if(this.recursive)
-                        {
-                            HashSuperclassAndinterface.add(field_type);
+                            System.out.println("Object reference " + f.getClass() + " " + f.getName() + " with hashcode: " + f.hashCode());
                         }
                     }
                     else
