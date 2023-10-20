@@ -72,13 +72,14 @@ public class Inspector {
     {
         String className = obj.getClass().getName();
         Class immediateSuperClass = obj.getClass().getSuperclass();
-        System.out.println(className + " Superclass = " + immediateSuperClass);
+        //System.out.println(className + " Superclass = " + immediateSuperClass);
         Class[] theInterface = obj.getClass().getInterfaces();
-        System.out.println(className + " Interface = " + Arrays.toString(theInterface));
+       // System.out.println(className + " Interface = " + Arrays.toString(theInterface));
 
         Vector<Class> superclassAndinterface = new Vector<>();
-        if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
-        for (Class i : theInterface) superclassAndinterface.addElement(i);
+        superclassAndinterface.addElement(obj.getClass());
+        //if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
+        //for (Class i : theInterface) superclassAndinterface.addElement(i);
 
         for (int index = 0; index < superclassAndinterface.size(); index++)
         {
@@ -95,11 +96,26 @@ public class Inspector {
                 System.out.println("Interface = " + Arrays.toString(theInterface));
                 if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
                 for (Class i : theInterface) superclassAndinterface.addElement(i);
-            }
-            catch (NullPointerException e){;}
 
-            InspectMethod(c);
-            InspectConstructor(c);
+                //InspectMethod(c);
+                //InspectConstructor(c);
+
+                if (Modifier.isAbstract(c.getModifiers()))
+                {
+                    InspectField(immediateSuperClass, superclassAndinterface.elementAt(index - 1).newInstance());
+                }
+                else
+                {
+                    InspectField(c, c.getModifiers());
+
+                }
+            }
+            catch (NullPointerException e){;} catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+
 
         }
     }
@@ -142,9 +158,7 @@ public class Inspector {
         return constructors;
     }
 
-    public Field[] InspectField(Object obj)
-    {
-        Class ObjClass = obj.getClass();
+    public Field[] InspectField(Class ObjClass, Object obj) {
         Field[] fields = ObjClass.getDeclaredFields();
         System.out.println(Arrays.toString(fields));
 
@@ -162,6 +176,12 @@ public class Inspector {
             catch (InaccessibleObjectException e)
             {
                 System.out.println("Not accessible");
+            }
+
+            try {
+                obj = ObjClass.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                System.out.println(e);
             }
 
             try

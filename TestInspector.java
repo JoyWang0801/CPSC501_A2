@@ -94,32 +94,33 @@ public class TestInspector {
     public void TestField() throws Exception {
 
         ClassA a = new ClassA();
-        isp.InspectField(a);
+        isp.InspectField(a.getClass(), a);
 
         assertEquals(3, a.getVal());
         a.setVal(10);
-        isp.InspectField(a);
+        isp.InspectField(a.getClass(), a);
     }
 
     @Test
     public void TestFieldD() throws Exception {
 
         ClassD d = new ClassD();
-        isp.InspectField(d);
+        isp.InspectField(d.getClass(), d);
     }
 
     @Test
     public void TestStringField() throws Exception {
 
         //ClassC c = new ClassC();
-        isp.InspectField("Karin Winter");
+        String s = "Karin Winter";
+        isp.InspectField(s.getClass(), s);
     }
 
     @Test
     public void TestBasicInfo() throws Exception {
 
         ClassB a = new ClassB();
-        isp.InspectBasicInfo(a);
+        isp.inspect(a, false);
     }
 
     @Test
@@ -127,4 +128,5 @@ public class TestInspector {
 
         isp.inspect(new ClassB(), false);
     }
+
 }
