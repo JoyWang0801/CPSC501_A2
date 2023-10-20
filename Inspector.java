@@ -36,23 +36,35 @@ public class Inspector {
     Class field_type;
     int field_modifier;
 
+    boolean recursive = false;
+    Vector objectsToInspect = new Vector();
     public void inspect(Object obj, boolean recursive) {
-        Vector objectsToInspect = new Vector();
+        this.objectsToInspect.addElement(obj);
+        this.recursive = recursive;
+
         Class ObjClass = obj.getClass();
+        this.objectsToInspect.addElement(obj);
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
 
         //inspect the current class
         //inspectFields(obj, ObjClass,objectsToInspect);
+
 //        InspectBasicInfo(ObjClass);
 //        InspectMethod(ObjClass);
 //        InspectConstructor(ObjClass);
 //        InspectField(obj, ObjClass);
-        ArrayInfo arrayInfo = new ArrayInfo();
 
-        if(ObjClass.isArray())
+        Enumeration e = this.objectsToInspect.elements();
+        Object o = e.nextElement();
+        while(e.hasMoreElements())
         {
-            arrayInfo.name = ObjClass.getName();
-            InspectArrayContent(obj, arrayInfo);
+            System.out.println("==============" + o + "==============");
+            //InspectSupers(o);
+            InspectBasicInfo(o);
+            //InspectMethod(o);
+            //InspectConstructor(o);
+            //InspectField(o);
+            o = e.nextElement();
         }
 
         if(recursive)
@@ -63,35 +75,70 @@ public class Inspector {
 
     }
 
-    public String InspectClassName(Object obj)
+    public void InspectSupers(Object obj)
     {
-        Class ObjClass = obj.getClass();
-        String className = "";
-        if(ObjClass.isArray())
+        Class immediateSuperClass = obj.getClass().getSuperclass();
+        Class[] theInterface = obj.getClass().getInterfaces();
+
+        while(immediateSuperClass != null || theInterface != null)
         {
-            className = ObjClass.getName();
-        }
-        else
-        {
-            className = ObjClass.getName();
+            System.out.println("Superclass = " + immediateSuperClass);
+            System.out.println("Interface = " + Arrays.toString(theInterface));
+
+            immediateSuperClass = immediateSuperClass.getSuperclass();
+            theInterface = immediateSuperClass.getInterfaces();
         }
 
-        return className;
+        while(theInterface != null)
+        {
+        }
+        //System.out.println("Interface = " + theInterface.toString());
     }
 
-    public void InspectBasicInfo(Class ObjClass)
+    public void InspectBasicInfo(Object obj)
     {
-        String className = ObjClass.getName();
-        Class immediateSuperClass = ObjClass.getSuperclass();
-        Class[] theInternface = ObjClass.getInterfaces();
+        String className = obj.getClass().getName();
+        Class immediateSuperClass = obj.getClass().getSuperclass();
+        Class[] theInterface = obj.getClass().getInterfaces();
+
+        while(immediateSuperClass != null || theInterface.length > 0)
+        {
+            System.out.println("Superclass = " + immediateSuperClass);
+            System.out.println("Interface = " + Arrays.toString(theInterface));
+
+            this.objectsToInspect.addElement(immediateSuperClass);
+
+            try
+            {
+                immediateSuperClass = immediateSuperClass.getSuperclass();
+
+                theInterface = immediateSuperClass.getInterfaces();
+            }
+            catch (NullPointerException e){break;}
+        }
+
+        /*if(theInterface.length > 0)
+        {
+            for(Class i : theInterface)
+            {
+                if(!this.objectsToInspect.contains(i))
+                {
+                    System.out.println("Adding interface " + i);
+                    this.objectsToInspect.addElement(i);
+                }
+            }
+        }*/
 
         System.out.println("name = " + className);
-//        System.out.println("The name of the immediate superclass: " + immediateSuperClass);
-//        System.out.println("The name of the immediate superclass: " + Arrays.toString(theTnternface));
+        System.out.println("Immediate superclass: " + immediateSuperClass);
+        System.out.println("Immediate interfaces: " + Arrays.toString(theInterface));
+
+        System.out.println(this.objectsToInspect.toString());
     }
 
-    public Method[] InspectMethod(Class ObjClass)
+    public Method[] InspectMethod(Object obj)
     {
+        Class ObjClass = obj.getClass();
         Method[] methods = ObjClass.getDeclaredMethods();
 
         for(Method m : methods)
@@ -101,38 +148,52 @@ public class Inspector {
             method_returnType = m.getReturnType();
             method_modifier = m.getModifiers();
 
-//            System.out.println("exceptions thrown in function " + m.getName() + " : " + Arrays.toString(exceptionTypes));
-//            System.out.println("parameter type in function " + m.getName() + " : " + Arrays.toString(parameterTypes));
-//            System.out.println("return type in function " + m.getName() + " : " + returnType);
-//            System.out.println("the modifier in function " + m.getName() + " : " + Modifier.toString(modifier));
+            System.out.println("exceptions thrown in function " + m.getName() + " : " + Arrays.toString(method_exceptionTypes));
+            System.out.println("parameter type in function " + m.getName() + " : " + Arrays.toString(method_parameterTypes));
+            System.out.println("return type in function " + m.getName() + " : " + method_returnType);
+            System.out.println("the modifier in function " + m.getName() + " : " + Modifier.toString(method_modifier));
         }
 
         return methods;
     }
 
-    public Constructor[] InspectConstructor(Class ObjClass)
+    public Constructor[] InspectConstructor(Object obj)
     {
+        Class ObjClass = obj.getClass();
         Constructor[] constructors = ObjClass.getConstructors();
 
         for(Constructor c : constructors)
         {
             constructor_parameterTypes = c.getParameterTypes();
             constructor_modifier = c.getModifiers();
-            //System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(parameterTypes));
-            //System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(modifier));
-
+            System.out.println("parameter types in function " + c.getName() + " : " + Arrays.toString(constructor_parameterTypes));
+            System.out.println("the modifier in function " + c.getName() + " : " + Modifier.toString(constructor_modifier));
         }
 
         return constructors;
     }
 
-    public Field[] InspectField(Object obj, Class ObjClass)
+    public Field[] InspectField(Object obj)
     {
+        Class ObjClass = obj.getClass();
         Field[] fields = ObjClass.getDeclaredFields();
+        System.out.println(Arrays.toString(fields));
+
         for(Field f : fields)
         {
             Class field_type = f.getType();
+            System.out.println(f.getName() + " " + field_type);
             int field_modifier = f.getModifiers();
+
+            try
+            {
+                f.setAccessible(true);
+
+            }
+            catch (InaccessibleObjectException e)
+            {
+                System.out.println("Not accessible");
+            }
 
             try
             {
@@ -141,41 +202,36 @@ public class Inspector {
                     //System.out.println("Object references, arrays or interfaces");
                     if(field_type.isArray())
                     {
-
+                        ArrayInfo arrayInfo = new ArrayInfo();
+                        InspectArray(f.get(obj), arrayInfo);
+/*                        System.out.println("Name = " + arrayInfo.name);
+                        System.out.println("Component Type = " + arrayInfo.ComponentType.keySet());
+                        System.out.println("Len = " + arrayInfo.Length);*/
                     }
-                    else if(field_type.isInterface())
+/*                    else if(field_type.isInterface())
                     {
                         System.out.println("Interface");
+                    }*/
+                    else
+                    {
+                        System.out.println("Object reference " + ObjClass + " " + f.getName() + " " + f.hashCode());
+                        //objectsToInspect.add(f);
+                        this.objectsToInspect.addElement(field_type);
                     }
                 }
                 else
                 {
-                    try
-                    {
-                        f.setAccessible(true);
-
-                    }
-                    catch (InaccessibleObjectException e)
-                    {
-                        System.out.println("Not accessible");
-                    }
                     Object value = f.get(obj);
                     System.out.println(value);
                 }
             }
-            catch (IllegalAccessException e)
-            {
-                System.out.println(e);
-            }
-            catch (IllegalArgumentException e)
+            catch (IllegalAccessException | IllegalArgumentException e)
             {
                 System.out.println(e);
             }
 //            System.out.println("the type in the field " + f.getName() + " : " + type.getName());
 //            System.out.println("the modifier in field " + f.getName() + " : " + Modifier.toString(modifier));
-
         }
-
         return fields;
     }
 

@@ -1,3 +1,4 @@
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -5,19 +6,11 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class TestInspector {
-    @Test
-    public void TestInspectClassName() {
-        String s;
-        Inspector isp = new Inspector();
-        s = isp.InspectClassName(new ClassA());
-        assertEquals(s, "ClassA");
-    }
-
-    @Test
-    public void TestClassBArray()
+    Inspector isp;
+    @Before
+    public void setup()
     {
-        Inspector isp = new Inspector();
-        isp.inspect(new ClassB[10], false);
+        isp = new Inspector();
     }
 
     @Test
@@ -25,11 +18,45 @@ public class TestInspector {
     {
         ArrayInfo info1 = new ArrayInfo();
         ArrayInfo info2 = new ArrayInfo();
+        ArrayInfo info3 = new ArrayInfo();
         int[] testList = {1,2,3,4,5};
-        String[] testList2 = {"Hi", "This", "Is", "Karina"};
-        Inspector isp = new Inspector();
+        char[] testList2 = {'a', 'b', 'c', 'f'};
+        String[] testList3 = {"a", "b", "c", "f"};
+
         isp.InspectArray(testList, info1);
         isp.InspectArray(testList2, info2);
+        isp.InspectArray(testList3, info3);
+
+        assertEquals("[I", info1.name);
+        assertEquals("[int]", Arrays.toString(info1.ComponentType.keySet().toArray()));
+        assertEquals(5, info1.Length);
+        assertEquals("[C", info2.name);
+        assertEquals("[char]", Arrays.toString(info2.ComponentType.keySet().toArray()));
+        assertEquals(4, info2.Length);
+        assertEquals("[Ljava.lang.String;", info3.name);
+        assertEquals("[class java.lang.String]", Arrays.toString(info3.ComponentType.keySet().toArray()));
+        assertEquals(4, info3.Length);
+    }
+
+    @Test
+    public void TestClassBArray()
+    {
+        ArrayInfo info = new ArrayInfo();
+
+        isp.InspectArray(new ClassB[10], info);
+        assertEquals("[LClassB;", info.name);
+        assertEquals("[class ClassB]", Arrays.toString(info.ComponentType.keySet().toArray()));
+        assertEquals(10, info.Length);
+    }
+    @Test
+    public void TestClassB2DArray()
+    {
+        ArrayInfo info = new ArrayInfo();
+
+        isp.InspectArray(new ClassB[10][5], info);
+        assertEquals("[[LClassB;", info.name);
+        assertEquals("[class ClassB]", Arrays.toString(info.ComponentType.keySet().toArray()));
+        assertEquals(10, info.Length);
     }
 
     @Test
@@ -37,12 +64,13 @@ public class TestInspector {
     {
         ArrayInfo info1 = new ArrayInfo();
         int[][] testList = {{1,2},{3,4,5,6}};
-        Inspector isp = new Inspector();
+
         isp.InspectArray(testList, info1);
 
-        System.out.println(info1.Length);
-        System.out.println(info1.Dimension);
-        System.out.println(Arrays.toString(info1.ComponentType.keySet().toArray()));
+        assertEquals("[[I", info1.name);
+        assertEquals("[int]", Arrays.toString(info1.ComponentType.keySet().toArray()));
+        assertEquals(testList.length, info1.Length);
+
     }
 
     @Test
@@ -54,15 +82,49 @@ public class TestInspector {
                 {"four", 5},
                 {6, "seven"}
         };
-        Inspector isp = new Inspector();
+
         isp.InspectArray(testList, info);
 
-        System.out.println(info.Length);
-        System.out.println(info.Dimension);
+        assertEquals(testList.length, info.Length);
+        System.out.println( info.name);
         System.out.println(Arrays.toString(info.ComponentType.keySet().toArray()));
-
-
     }
 
+    @Test
+    public void TestField() throws Exception {
 
+        ClassA a = new ClassA();
+        isp.InspectField(a);
+
+        assertEquals(3, a.getVal());
+        a.setVal(10);
+        isp.InspectField(a);
+    }
+
+    @Test
+    public void TestFieldD() throws Exception {
+
+        ClassD d = new ClassD();
+        isp.InspectField(d);
+    }
+
+    @Test
+    public void TestStringField() throws Exception {
+
+        //ClassC c = new ClassC();
+        isp.InspectField("Karin Winter");
+    }
+
+    @Test
+    public void TestBasicInfo() throws Exception {
+
+        ClassB a = new ClassB();
+        isp.InspectBasicInfo(a);
+    }
+
+    @Test
+    public void TestInspect() throws Exception {
+
+        isp.inspect(new ClassB(), false);
+    }
 }
