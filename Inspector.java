@@ -4,31 +4,6 @@ import javax.management.RuntimeErrorException;
 import java.util.*;
 import java.lang.reflect.*;
 
-/*
-The name of the declaring class
-The name of the immediate superclass
-The name of the interfaces the class implements
-
-The methods the class declares. For each, also find the following:
-    The exceptions thrown
-    The parameter types
-    The return type
-    The modifiers
-
-The constructors the class declares. For each, also find the following:
-    The parameter types
-    The modifiers
-
-The fields the class declares. For each, also find the following:
-    The type
-    The modifiers
-
-The current value of each field. If the field is an object reference,
-    and recursive is set to false, simply print out the “reference value”
-    directly (this will be the name of the object’s class plus the object’s “identity hash code”).
- */
-
-
 public class Inspector {
     Class[] method_exceptionTypes;
     Class[] method_parameterTypes;
@@ -41,6 +16,7 @@ public class Inspector {
 
     boolean recursive = false;
     Vector<Class> superclassAndinterface = new Vector<>();
+    HashSet<Class> HashSuperclassAndinterface = new HashSet<>();
 
     public void inspect(Object obj, boolean recursive) {
         this.recursive = recursive;
@@ -48,7 +24,7 @@ public class Inspector {
 
         InspectBasicInfo(obj);
           //inspectFieldClasses( obj, ObjClass, objectsToInspect, recursive);
-        System.out.println(this.superclassAndinterface.toString());
+        //System.out.println(this.superclassAndinterface.toString());
 
     }
 
@@ -56,11 +32,12 @@ public class Inspector {
     {
         Class immediateSuperClass;
         Class[] theInterface;
-        superclassAndinterface.addElement(obj.getClass());
+        HashSuperclassAndinterface.add(obj.getClass());
 
-        for (int index = 0; index < superclassAndinterface.size(); index++)
+        //for (int index = 0; index < SuperclassAndinterface.size(); index++)
+        for (Class c : HashSuperclassAndinterface)
         {
-            Class c = superclassAndinterface.elementAt(index);
+            //Class c = HashSuperclassAndinterface.(index);
 
             // Update superclass
             try
@@ -71,8 +48,8 @@ public class Inspector {
                 theInterface = c.getInterfaces();
                 System.out.println("Superclass = " + immediateSuperClass);
                 System.out.println("Interface = " + Arrays.toString(theInterface));
-                if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
-                for (Class i : theInterface) superclassAndinterface.addElement(i);
+                if (immediateSuperClass != null) HashSuperclassAndinterface.add(immediateSuperClass);
+                for (Class i : theInterface) HashSuperclassAndinterface.add(i);
 
                 //InspectMethod(c);
                 //InspectConstructor(c);
@@ -135,7 +112,6 @@ public class Inspector {
     public Field[] InspectField(Class ObjClass, Object obj) throws IllegalAccessException {
         System.out.println("==============FIELD==============");
         int modifier = ObjClass.getModifiers();
-        Boolean isAbtract = Modifier.isAbstract(modifier);
 
         Field[] fields = ObjClass.getDeclaredFields();
         for(Field f : fields)
@@ -152,10 +128,11 @@ public class Inspector {
             }
             catch (InaccessibleObjectException e)
             {
-                System.out.println("Not accessible");
+                System.out.println("Field is not accessible");
                 continue;
             }
 
+            Boolean isAbtract = Modifier.isAbstract(modifier);
             // Skip abstract classes
             if (!isAbtract){
                 try
@@ -174,7 +151,7 @@ public class Inspector {
 
                         if(this.recursive)
                         {
-                            superclassAndinterface.addElement(field_type);
+                            HashSuperclassAndinterface.add(field_type);
                         }
                     }
                     else
@@ -183,12 +160,7 @@ public class Inspector {
                         System.out.println("|ーValue = " + value);
                     }
                 }
-                catch (IllegalAccessException e)
-                {
-                    //System.out.println(e);
-                    throw new RuntimeException(e.getMessage());
-                }
-                catch (IllegalArgumentException e)
+                catch (IllegalAccessException | IllegalArgumentException e)
                 {
                     throw new RuntimeException(e.getMessage());
                 }
