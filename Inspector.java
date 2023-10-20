@@ -1,3 +1,4 @@
+import javax.management.RuntimeErrorException;
 import java.util.*;
 import java.lang.reflect.*;
 
@@ -37,9 +38,9 @@ public class Inspector {
     int field_modifier;
 
     boolean recursive = false;
-    Vector objectsToInspect = new Vector();
+    Vector<Class> superclassAndinterface = new Vector<>();
+
     public void inspect(Object obj, boolean recursive) {
-        this.objectsToInspect.addElement(obj);
         this.recursive = recursive;
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
 
@@ -48,23 +49,8 @@ public class Inspector {
 //        InspectConstructor(ObjClass);
 //        InspectField(obj, ObjClass);
 
-        Enumeration e = this.objectsToInspect.elements();
-
-        //while(e.hasMoreElements())
-        //{
-          //  Object o = e.nextElement();
-           // System.out.println("==============" + o + "==============");
-            //InspectMethod(o);
-            //InspectConstructor(o);
-            //InspectField(o);
-        //}
-
-        if(recursive)
-        {
-
-        }
           //inspectFieldClasses( obj, ObjClass, objectsToInspect, recursive);
-        System.out.println(this.objectsToInspect.toString());
+        System.out.println(this.superclassAndinterface.toString());
 
     }
 
@@ -76,7 +62,6 @@ public class Inspector {
         Class[] theInterface = obj.getClass().getInterfaces();
        // System.out.println(className + " Interface = " + Arrays.toString(theInterface));
 
-        Vector<Class> superclassAndinterface = new Vector<>();
         superclassAndinterface.addElement(obj.getClass());
         //if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
         //for (Class i : theInterface) superclassAndinterface.addElement(i);
@@ -106,11 +91,18 @@ public class Inspector {
                 }
                 else
                 {
-                    InspectField(c, c.getModifiers());
+                    InspectField(c, c.newInstance());
 
                 }
             }
-            catch (NullPointerException e){;}
+            catch (NullPointerException | IllegalAccessException e)
+            {
+                throw new RuntimeException(e.getMessage());
+            }
+            catch (InstantiationException e)
+            {
+                throw new RuntimeException(e);
+            }
 
         }
     }
@@ -153,7 +145,7 @@ public class Inspector {
         return constructors;
     }
 
-    public Field[] InspectField(Class ObjClass, Object obj) {
+    public Field[] InspectField(Class ObjClass, Object obj) throws IllegalAccessException {
         System.out.println("==============FIELD==============");
         int modifier = ObjClass.getModifiers();
         Boolean isAbtract = Modifier.isAbstract(modifier);
@@ -164,20 +156,17 @@ public class Inspector {
             Class field_type = f.getType();
             int field_modifier = f.getModifiers();
             System.out.println("ーーーー" + f.getName() + "ーーーー");
-            System.out.println("|ー" + field_type);
-            System.out.println("|ー" + Modifier.toString(field_modifier));
+            System.out.println("|ーField type = " + field_type);
+            System.out.println("|ーField modifier = " + Modifier.toString(field_modifier));
 
-            // Access private
             try
             {
                 f.setAccessible(true);
-
             }
             catch (InaccessibleObjectException e)
             {
                 System.out.println("Not accessible");
             }
-
 
             // Skip abstract classes
             if (!isAbtract){
@@ -185,31 +174,36 @@ public class Inspector {
                 {
                     if(!field_type.isPrimitive())
                     {
-                        //System.out.println("Object references, arrays or interfaces");
                         if(field_type.isArray())
                         {
                             ArrayInfo arrayInfo = new ArrayInfo();
                             InspectArray(f.get(obj), arrayInfo);
-//                            System.out.println("|ーName = " + arrayInfo.name);
-//                            System.out.println("|ーComponent Type = " + arrayInfo.ComponentType.keySet());
-//                            System.out.println("|ー Array Length = " + arrayInfo.Length);
                         }
                         else
                         {
-                            System.out.println("Object reference " + ObjClass + " " + f.getName() + " " + f.hashCode());
-                            //objectsToInspect.add(f);
-                            this.objectsToInspect.addElement(field_type);
+                            System.out.println("Object reference " + f.getClass() + " " + f.getName() + " " + f.hashCode());
+                        }
+
+                        if(this.recursive)
+                        {
+                            superclassAndinterface.addElement(field_type);
                         }
                     }
                     else
                     {
+                        // Access private
                         Object value = f.get(obj);
-                        System.out.println(value);
+                        System.out.println("|ーValue = " + value);
                     }
                 }
-                catch (IllegalAccessException | IllegalArgumentException e)
+                catch (IllegalAccessException e)
                 {
-                    System.out.println(e);
+                    //System.out.println(e);
+                    throw new RuntimeException(e.getMessage());
+                }
+                catch (IllegalArgumentException e)
+                {
+                    throw new RuntimeException(e.getMessage());
                 }
             }
         }
