@@ -1,3 +1,5 @@
+import com.sun.nio.sctp.IllegalReceiveException;
+
 import javax.management.RuntimeErrorException;
 import java.util.*;
 import java.lang.reflect.*;
@@ -45,10 +47,6 @@ public class Inspector {
         System.out.println("inside inspector: " + obj + " (recursive = " + recursive + ")");
 
         InspectBasicInfo(obj);
-//        InspectMethod(ObjClass);
-//        InspectConstructor(ObjClass);
-//        InspectField(obj, ObjClass);
-
           //inspectFieldClasses( obj, ObjClass, objectsToInspect, recursive);
         System.out.println(this.superclassAndinterface.toString());
 
@@ -56,15 +54,9 @@ public class Inspector {
 
     public void InspectBasicInfo(Object obj)
     {
-        String className = obj.getClass().getName();
-        Class immediateSuperClass = obj.getClass().getSuperclass();
-        //System.out.println(className + " Superclass = " + immediateSuperClass);
-        Class[] theInterface = obj.getClass().getInterfaces();
-       // System.out.println(className + " Interface = " + Arrays.toString(theInterface));
-
+        Class immediateSuperClass;
+        Class[] theInterface;
         superclassAndinterface.addElement(obj.getClass());
-        //if (immediateSuperClass != null) superclassAndinterface.addElement(immediateSuperClass);
-        //for (Class i : theInterface) superclassAndinterface.addElement(i);
 
         for (int index = 0; index < superclassAndinterface.size(); index++)
         {
@@ -73,8 +65,8 @@ public class Inspector {
             // Update superclass
             try
             {
-                className = c.getName();
-                System.out.println("==============" + className + "==============");
+                System.out.println("==============CLASS==============");
+                System.out.println("ーーーーclass name: " + c.getName() + "ーーーー");
                 immediateSuperClass = c.getSuperclass();
                 theInterface = c.getInterfaces();
                 System.out.println("Superclass = " + immediateSuperClass);
@@ -84,7 +76,6 @@ public class Inspector {
 
                 //InspectMethod(c);
                 //InspectConstructor(c);
-
                 if (Modifier.isAbstract(c.getModifiers()))
                 {
                     InspectField(c, obj);
@@ -95,13 +86,9 @@ public class Inspector {
 
                 }
             }
-            catch (NullPointerException | IllegalAccessException e)
+            catch (NullPointerException | IllegalAccessException | InstantiationException e)
             {
                 throw new RuntimeException(e.getMessage());
-            }
-            catch (InstantiationException e)
-            {
-                throw new RuntimeException(e);
             }
 
         }
@@ -113,7 +100,7 @@ public class Inspector {
         System.out.println("==============METHOD==============");
         for(Method m : methods)
         {
-            System.out.println("ーーーー" + m.getName() + "ーーーー");
+            System.out.println("ーーーー method name: " + m.getName() + "ーーーー");
             method_exceptionTypes = m.getExceptionTypes();
             method_parameterTypes = m.getParameterTypes();
             method_returnType = m.getReturnType();
@@ -135,7 +122,7 @@ public class Inspector {
 
         for(Constructor c : constructors)
         {
-            System.out.println("ーーーー" + c.getName() + "ーーーー");
+            System.out.println("ーーーー constructor name: " + c.getName() + "ーーーー");
             constructor_parameterTypes = c.getParameterTypes();
             constructor_modifier = c.getModifiers();
             System.out.println("|ーparameter types = " + Arrays.toString(constructor_parameterTypes));
@@ -149,13 +136,13 @@ public class Inspector {
         System.out.println("==============FIELD==============");
         int modifier = ObjClass.getModifiers();
         Boolean isAbtract = Modifier.isAbstract(modifier);
-        Field[] fields = ObjClass.getDeclaredFields();
 
+        Field[] fields = ObjClass.getDeclaredFields();
         for(Field f : fields)
         {
             Class field_type = f.getType();
             int field_modifier = f.getModifiers();
-            System.out.println("ーーーー" + f.getName() + "ーーーー");
+            System.out.println("ーーーー field name: " + f.getName() + "ーーーー");
             System.out.println("|ーField type = " + field_type);
             System.out.println("|ーField modifier = " + Modifier.toString(field_modifier));
 
@@ -166,6 +153,7 @@ public class Inspector {
             catch (InaccessibleObjectException e)
             {
                 System.out.println("Not accessible");
+                continue;
             }
 
             // Skip abstract classes
@@ -191,7 +179,6 @@ public class Inspector {
                     }
                     else
                     {
-                        // Access private
                         Object value = f.get(obj);
                         System.out.println("|ーValue = " + value);
                     }
@@ -237,6 +224,7 @@ public class Inspector {
                 Object arrobj = Array.get(obj, index);
                 if (componentType.isArray()) {
                     InspectArrayContent(arrobj, info);
+                   // Object[] obj = (Object[]) arrobj;
                 } else {
                     System.out.print(arrobj + " ");
                     info.ComponentType.put(componentType, 1);

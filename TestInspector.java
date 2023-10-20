@@ -126,7 +126,13 @@ public class TestInspector {
     @Test
     public void TestInspect() throws Exception {
 
-        isp.inspect(new ClassB(), false);
+        isp.inspect(new ClassA(), true);
+    }
+
+    @Test
+    public void TestInspectString() throws Exception {
+        String s = "Karina Winter";
+        isp.inspect(s, false);
     }
 
 }
